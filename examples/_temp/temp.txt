@@ -1,0 +1,3 @@
+/home/harry/caffe/caffe-master/examples/images/cat_gray.jpg
+/home/harry/caffe/caffe-master/examples/images/cat.jpg
+/home/harry/caffe/caffe-master/examples/images/fish-bike.jpg
