@@ -113,33 +113,31 @@
     	 	 feature_dbs.push_back(shared_ptr<writeDb<Dtype> >(db));  
   	 }
  	 std::vector<Blob<float>*> input_vec;
-	 std::vector<int> image_indices(num_features, 0);
-	 int num_mini_batches = atoi(argv[++arg_pos]);;
-	 const shared_ptr<Layer<Dtype> > layer = feature_extraction_net->layer_by_name("data");
-	 ImageDataLayer<Dtype>* data_layer = (ImageDataLayer<Dtype>*) layer.get();
-	 const string& source = data_layer->layer_param().image_data_param().source();
-	 const int& my_batch_size = data_layer->layer_param().image_data_param().batch_size();
-	 LOG(ERROR)<<"source:"<<my_batch_size;
-	 std::ifstream infile(source.c_str());
-	 string filename;
-	 int label;
-	 std::vector<int> labels;
-	 while(infile >> filename >> label){	
-	 	 LOG(ERROR)<<"labels:"<<label;
-	 	 labels.push_back(label);
-	 }
-	 for(int i = 3; i < 6; i++){
-	 	 LOG(ERROR)<<"label:"<<labels.size();
-	 }
+	 // std::vector<int> image_indices(num_features, 0);
+	 int num_mini_batches = atoi(argv[++arg_pos]);
+	 // const shared_ptr<Layer<Dtype> > layer = feature_extraction_net->layer_by_name("data");
+	 // ImageDataLayer<Dtype>* data_layer = (ImageDataLayer<Dtype>*) layer.get();
+	 // const string& source = data_layer->layer_param().image_data_param().source();
+	 // const int& my_batch_size = data_layer->layer_param().image_data_param().batch_size();
+	 // std::ifstream infile(source.c_str());
+	 // string filename;
+	 // int label;
+	 // std::vector<int> labels;
+	 // while(infile >> filename >> label){	
+	 // 	 // LOG(ERROR)<<"labels:"<<label;
+	 // 	 labels.push_back(label);
+	 // }
 	 for (int batch_index = 0; batch_index < num_mini_batches; ++batch_index) {
 	 	 feature_extraction_net->Forward(input_vec);
 	    	 for (int i = 0; i < num_features; ++i) {
 	      		 const shared_ptr<Blob<Dtype> > feature_blob = feature_extraction_net
 	          			 ->blob_by_name(blob_names[i]);
+	          		 const shared_ptr< Blob<Dtype> > label_blob = feature_extraction_net
+	 			 ->blob_by_name("label");
 	      		 int batch_size = feature_blob->num();
 	      		 int dim_features = feature_blob->count() / batch_size;
-
 	      		 const Dtype* feature_blob_data;
+	      		 const Dtype* label_blob_data;
 	      		 for (int n = 0; n < batch_size; ++n) {
 	        			// datum.set_height(feature_blob->height());
 				        // datum.set_width(feature_blob->width());
@@ -148,7 +146,9 @@
 				        // datum.clear_float_data();
 				 feature_blob_data = feature_blob->cpu_data() +
 				 	 feature_blob->offset(n);
-				 feature_dbs[i]->write(labels[batch_index*batch_size+n]);
+				 label_blob_data = label_blob->cpu_data() + 
+				 	 label_blob->offset(batch_index*batch_size+n);
+				 feature_dbs[i]->write(*label_blob_data);
 				 feature_dbs[i]->write(" ");
 	       			 for (int d = 0; d < dim_features; ++d) {
 				          // datum.add_float_data(feature_blob_data[d]);
@@ -166,7 +166,7 @@
 	   //      			string out;
 				// CHECK(datum.SerializeToString(&out));
 				// txns.at(i)->Put(std::string(key_str, length), out);
-				 ++image_indices[i];
+				 // ++image_indices[i];
 				// LOG(ERROR)<< "Extracted features of " << image_indices[i] <<
 				//              " query images for feature blob " << blob_names[i];
 				
